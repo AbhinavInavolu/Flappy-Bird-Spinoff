@@ -1,5 +1,5 @@
 import pygame
-import obstacles_test as Obstacles
+import obstacles_test as obs
 import json
 
 pygame.init()
@@ -10,7 +10,7 @@ class Player:
         self.x = 50
         self.y = 300
         self.main = None
-        self.move = True
+        self.move = False
     
     def display(self, screen):
         self.main = pygame.draw.rect(screen, (0, 0, 255), (self.x, self.y, 30, 30))
@@ -57,6 +57,11 @@ class Window:
         self.player = Player()
         self.move = False
     
+    def reset(self):
+        self.scrolling = 0
+        self.pos = 0
+        self.move = False
+
     def mainMenu(self):
         self.clock.tick(60)
 
@@ -87,38 +92,46 @@ class Window:
 
         self.screen.fill((173, 216, 230))
 
-        finishLine = Obstacles.finish_line(self.pos, self.screen)
-        obstacles = Obstacles.level1obstacles(self.pos, self.screen)
+        finishLine = obs.finish_line(self.pos, self.screen)
+        obstacles = obs.level1obstacles(self.pos, self.screen)
 
         self.player.display(self.screen)
-        self.move = self.player.movement()
-
-        if self.move:
-            self.pos += 1
 
         finished = self.player.checkCollision(finishLine)
         failed = self.player.checkCollision(obstacles)
 
-        if finished:
+        if not(finished or failed): # stopping movment after either losing or beating the level
+            self.move = self.player.movement()
+
+            if self.move:
+                self.pos += 1
+
+        if finished: # drawing buttons if you finished the level
             replayButton = self.createButton((375, 475), (175, 75), 65, "Replay", (390, 490), (0, 255, 0), (0, 220, 0))
             mainMenuButton = self.createButton((65, 475), (285, 75), 65, "Main Menu", (80, 490), (0, 255, 0), (0, 220, 0))
             nextlevelButton = self.createButton((575, 475), (250, 75), 65, "Next Level", (590, 490), (0, 255, 0), (0, 220, 0))
 
-        elif failed:
+        elif failed: # drawing buttons if you failed the level
             replayButton = self.createButton((375, 475), (175, 75), 65, "Retry", (390, 490), (0, 255, 0), (0, 220, 0))
             mainMenuButton = self.createButton((65, 475), (285, 75), 65, "Main Menu", (80, 490), (0, 255, 0), (0, 220, 0))
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT: # closing the game
                 return "QUIT"
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                mousePos = event.pos
-                if "mainMenuButton" in locals():
+                mousePos = event.pos # using locals since these buttons aren't crea
+                if "mainMenuButton" in locals(): # checking if you pressed a button
                     if replayButton.collidepoint(mousePos[0], mousePos[1]):
-                        return "replay" 
+                        self.reset()
+                        self.player.reset()
+                        return "level" 
                     elif mainMenuButton.collidepoint(mousePos[0], mousePos[1]):
+                        self.reset()
+                        self.player.reset()
                         return "mainMenu"
                 if "nextlevelButton" in locals() and nextlevelButton.collidepoint(mousePos[0], mousePos[1]):
+                    self.reset()
+                    self.player.reset()
                     return "nextLevel"
 
         return "level"
@@ -141,7 +154,7 @@ class Window:
             if event.type == pygame.QUIT:
                 return "QUIT"
 
-        return "levels"
+        return "levels"        
 
     def createButton(self, coordinates, dimensions, fontsize, text, textcooridnates, ac, ic, scrolling=0):
         button = pygame.Rect(coordinates[0], coordinates[1] - scrolling, dimensions[0], dimensions[1])
@@ -171,7 +184,7 @@ class Main(Window, Player):
         self.stats = open('progress.json')
         self.stats = json.load(self.stats)
 
-    def determineLevel(self):
+    def determineLevel(self): # reading json to check which level to start you on
         for level in self.stats:
             if not level["beat"]:
                 return level["level"]
