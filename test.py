@@ -1,5 +1,5 @@
 import pygame
-import obstacles_test as obs
+import ObstaclesTest as obs
 import json
 
 pygame.init()
@@ -181,8 +181,16 @@ class Main(Window, Player):
         self.run = True
         self.currentLevel = None
 
-        self.stats = open('progress.json')
-        self.stats = json.load(self.stats)
+        with open("Progress.json", "r+") as file:
+            self.stats = json.load(file)
+
+    def updateProgress(self, levelNum):
+        self.stats[levelNum - 1]["beat"] = True
+
+        with open("Progress.json", "r+") as file:
+            file.seek(0)
+            json.dump(self.stats, file, indent=4)
+            file.truncate()
 
     def determineLevel(self): # reading json to check which level to start you on
         for level in self.stats:
@@ -198,6 +206,9 @@ class Main(Window, Player):
             if self.currentWindow == "start":
                 self.currentLevel = self.determineLevel()
                 self.currentWindow = "level"
+
+            if self.currentWindow == "nextLevel":
+                self.updateProgress(1)
 
             if self.currentWindow == "QUIT":
                 pygame.quit()

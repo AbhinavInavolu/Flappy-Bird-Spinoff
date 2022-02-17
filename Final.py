@@ -1,5 +1,5 @@
 import pygame
-import obstacles_final as obstacles
+import ObstaclesFinal as obstacles
 
 
 class Main:
