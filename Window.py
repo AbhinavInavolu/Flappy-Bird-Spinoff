@@ -4,12 +4,14 @@ from ObstaclesTest import obstacles as obs
 
 
 class Window:
-    def __init__(self):
-        self.screen = pygame.display.set_mode((900, 600))
-        pygame.display.set_caption("Club Game" )
+    def __init__(self, icon):
 
-        img = pygame.image.load("icon.xcf")
-        pygame.display.set_icon(img)
+
+        py_image = pygame.image.load(icon)
+
+        pygame.display.set_icon(py_image)
+        pygame.display.set_caption("Club Game" )
+        self.screen = pygame.display.set_mode((900, 600))
 
         self.clock = pygame.time.Clock()
         self.scrolling = 0

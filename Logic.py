@@ -8,12 +8,15 @@ pygame.init()
 
 
 class Main(Window):
-    def __init__(self):
-        self.win = Window()
+    def __init__(self, icon, progress):
+        self.win = Window(icon)
+
         self.currentWindow = "mainMenu"
         self.currentLevel = None
 
-        with open("Progress.json", "r+") as file:
+        self.progressPath = progress
+
+        with open(self.progressPath, "r+") as file:
             self.stats = json.load(file)
 
         self.play()
@@ -21,7 +24,7 @@ class Main(Window):
     def updateProgress(self, levelNum):
         self.stats[levelNum - 1]["beat"] = True
 
-        with open("Progress.json", "r+") as file:
+        with open(self.progressPath, "r+") as file:
             file.seek(0)
             json.dump(self.stats, file, indent=4)
             file.truncate()
