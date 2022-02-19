@@ -1,4 +1,5 @@
-This is the command to package the game
+This is the command to package the game into an executable file (.exe)
 Run in the terminal
+
 
 pyinstaller --noconfirm --onefile --windowed --icon "C:/Users/inavo/Documents/GitHub/Club-Game/icon2.ico" --add-data "C:/Users/inavo/Documents/GitHub/Club-Game/icon.xcf;." --add-data "C:/Users/inavo/Documents/GitHub/Club-Game/Progress.json;."  "C:/Users/inavo/Documents/GitHub/Club-Game/Main.py"
