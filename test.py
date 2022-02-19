@@ -1,6 +1,7 @@
 import pygame
-import ObstaclesTest as obs
+from ObstaclesTest import obstacles as obs
 import json
+
 
 pygame.init()
 
@@ -51,11 +52,18 @@ class Player:
 class Window:
     def __init__(self):
         self.screen = pygame.display.set_mode((900, 600))
+        pygame.display.set_caption("Club Game" )
+
+        # img = pygame.image.load("game\icon.xcf")
+        img = pygame.image.load("icon.xcf")
+        pygame.display.set_icon(img)
+
         self.clock = pygame.time.Clock()
         self.scrolling = 0
         self.pos = 0
         self.player = Player()
         self.move = False
+        self.levelNum = 1
     
     def reset(self):
         self.scrolling = 0
@@ -92,8 +100,11 @@ class Window:
 
         self.screen.fill((173, 216, 230))
 
-        finishLine = obs.finish_line(self.pos, self.screen)
-        obstacles = obs.level1obstacles(self.pos, self.screen)
+        finishLine = obs.finish_line(obs, self.pos, self.screen)
+
+        funcName = f"level{self.levelNum}obstacles"
+
+        obstacles = getattr(obs, funcName)(obs, self.pos, self.screen)
 
         self.player.display(self.screen)
 
@@ -108,12 +119,12 @@ class Window:
 
         if finished: # drawing buttons if you finished the level
             replayButton = self.createButton((375, 475), (175, 75), 65, "Replay", (390, 490), (0, 255, 0), (0, 220, 0))
-            mainMenuButton = self.createButton((65, 475), (285, 75), 65, "Main Menu", (80, 490), (0, 255, 0), (0, 220, 0))
+            mainMenuButton = self.createButton((70, 475), (275, 75), 65, "Main Menu", (90, 490), (0, 255, 0), (0, 220, 0))
             nextlevelButton = self.createButton((575, 475), (250, 75), 65, "Next Level", (590, 490), (0, 255, 0), (0, 220, 0))
 
         elif failed: # drawing buttons if you failed the level
-            replayButton = self.createButton((375, 475), (175, 75), 65, "Retry", (390, 490), (0, 255, 0), (0, 220, 0))
-            mainMenuButton = self.createButton((65, 475), (285, 75), 65, "Main Menu", (80, 490), (0, 255, 0), (0, 220, 0))
+            replayButton = self.createButton((375, 475), (145, 75), 65, "Retry", (390, 490), (0, 255, 0), (0, 220, 0))
+            mainMenuButton = self.createButton((70, 475), (275, 75), 65, "Main Menu", (90, 490), (0, 255, 0), (0, 220, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # closing the game
@@ -132,7 +143,9 @@ class Window:
                 if "nextlevelButton" in locals() and nextlevelButton.collidepoint(mousePos[0], mousePos[1]):
                     self.reset()
                     self.player.reset()
-                    return "nextLevel"
+                    if self.levelNum < 9:
+                        self.levelNum += 1
+                    return "level"
 
         return "level"
 
@@ -150,21 +163,46 @@ class Window:
         self.clock.tick(60)
         self.screen.fill((173, 216, 230))
 
+        button1 = self.createButton((50, 75), (200, 100), 75, "Level 1", (65, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button2 = self.createButton((350, 75), (200, 100), 75, "Level 2", (365, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button3 = self.createButton((650, 75), (200, 100), 75, "Level 3", (665, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button4 = self.createButton((50, 225), (200, 100), 75, "Level 4", (65, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button5 = self.createButton((350, 225), (200, 100), 75, "Level 5", (365, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button6 = self.createButton((650, 225), (200, 100), 75, "Level 6", (665, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button7 = self.createButton((50, 375), (200, 100), 75, "Level 7", (65, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button8 = self.createButton((350, 375), (200, 100), 75, "Level 8", (365, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
+        button9 = self.createButton((650, 375), (200, 100), 75, "Level 9", (665, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
+
+        buttonsList = [button1, button2, button3, button4, button5, button6, button7, button8, button9]
+
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "QUIT"
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mousePos = event.pos
+
+                if event.button == 4 and self.scrolling > 0:
+                    self.scrolling -= 10
+                elif event.button == 5 and self.scrolling < 200:
+                    self.scrolling += 10
+                
+                for i in range(len(buttonsList)):
+                    if buttonsList[i].collidepoint(mousePos[0], mousePos[1]) and event.button == 1:
+                        self.levelNum = i + 1
+                        return "level"     
 
         return "levels"        
 
-    def createButton(self, coordinates, dimensions, fontsize, text, textcooridnates, ac, ic, scrolling=0):
+    def createButton(self, coordinates, dimensions, fontsize, text, textcooridnates, ac, ic, scrolling=0, rad=10):
         button = pygame.Rect(coordinates[0], coordinates[1] - scrolling, dimensions[0], dimensions[1])
 
         mouse_pos = pygame.mouse.get_pos()
 
         if button.collidepoint(mouse_pos[0], mouse_pos[1]):
-            pygame.draw.rect(self.screen, ic, button)
+            pygame.draw.rect(self.screen, ic, button, border_radius=rad)
         else:
-            pygame.draw.rect(self.screen, ac, button)
+            pygame.draw.rect(self.screen, ac, button, border_radius=rad)
 
         font = pygame.font.SysFont("None", fontsize)
         label = font.render(text, False, (0, 0, 0))
@@ -178,15 +216,16 @@ class Main(Window, Player):
     def __init__(self):
         self.win = Window()
         self.currentWindow = "mainMenu"
-        self.run = True
         self.currentLevel = None
 
+        # with open("game\Progress.json", "r+") as file:
         with open("Progress.json", "r+") as file:
             self.stats = json.load(file)
 
     def updateProgress(self, levelNum):
         self.stats[levelNum - 1]["beat"] = True
 
+        # with open("game\Progress.json", "r+") as file:
         with open("Progress.json", "r+") as file:
             file.seek(0)
             json.dump(self.stats, file, indent=4)
@@ -200,7 +239,8 @@ class Main(Window, Player):
         return level["level"]
 
     def play(self):
-        while self.run:
+        while True:
+
             self.currentWindow = getattr(Window, self.currentWindow)(self.win)
 
             if self.currentWindow == "start":
@@ -212,11 +252,9 @@ class Main(Window, Player):
 
             if self.currentWindow == "QUIT":
                 pygame.quit()
-                self.run = False
+                break
 
             pygame.display.update()
 
-main = Main()
-main.play()
-
-# Obstacles.end()
+# main = Main()
+# main.play()
