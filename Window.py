@@ -135,10 +135,7 @@ class Window:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mousePos = event.pos
 
-                if event.button == 4 and self.scrolling > 0:
-                    self.scrolling -= 10
-                elif event.button == 5 and self.scrolling < 200:
-                    self.scrolling += 10
+                self.scroll(event.button, 0, 200)
                 
                 for i in range(len(buttonsList)):
                     if buttonsList[i].collidepoint(mousePos[0], mousePos[1]) and event.button == 1:
@@ -146,6 +143,12 @@ class Window:
                         return "level"     
 
         return "levels"        
+
+    def scroll(self, event, min, max):
+        if event == 4 and self.scrolling > min:
+            self.scrolling -= 10
+        elif event == 5 and self.scrolling < max:
+            self.scrolling += 10
 
     def createButton(self, coordinates, dimensions, fontsize, text, textcooridnates, ac, ic, scrolling=0, rad=10):
         button = pygame.Rect(coordinates[0], coordinates[1] - scrolling, dimensions[0], dimensions[1])
