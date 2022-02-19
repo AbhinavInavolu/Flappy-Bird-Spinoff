@@ -54,7 +54,6 @@ class Window:
         self.screen = pygame.display.set_mode((900, 600))
         pygame.display.set_caption("Club Game" )
 
-        # img = pygame.image.load("game\icon.xcf")
         img = pygame.image.load("icon.xcf")
         pygame.display.set_icon(img)
 
@@ -218,14 +217,12 @@ class Main(Window, Player):
         self.currentWindow = "mainMenu"
         self.currentLevel = None
 
-        # with open("game\Progress.json", "r+") as file:
         with open("Progress.json", "r+") as file:
             self.stats = json.load(file)
 
     def updateProgress(self, levelNum):
         self.stats[levelNum - 1]["beat"] = True
 
-        # with open("game\Progress.json", "r+") as file:
         with open("Progress.json", "r+") as file:
             file.seek(0)
             json.dump(self.stats, file, indent=4)
