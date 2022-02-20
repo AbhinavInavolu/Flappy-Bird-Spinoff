@@ -29,7 +29,7 @@ class Main(Window):
             json.dump(self.stats, file, indent=4)
             file.truncate()
 
-    def determineLevel(self): # reading json to check which level to start you on
+    def determineLevel(self): 
         for level in self.stats:
             if not level["beat"]:
                 return level["level"]

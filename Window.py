@@ -15,6 +15,7 @@ class Window:
 
         self.clock = pygame.time.Clock()
         self.scrolling = 0
+        self.hScrollng = 0
         self.pos = 0
         self.player = Player()
         self.move = False
@@ -66,27 +67,27 @@ class Window:
         finished = self.player.checkCollision(finishLine)
         failed = self.player.checkCollision(obstacles)
 
-        if not(finished or failed): # stopping movment after either losing or beating the level
+        if not(finished or failed): 
             self.move = self.player.movement()
 
             if self.move:
                 self.pos += 1
 
-        if finished: # drawing buttons if you finished the level
+        if finished: 
             replayButton = self.createButton((375, 475), (175, 75), 65, "Replay", (390, 490), (0, 255, 0), (0, 220, 0))
             mainMenuButton = self.createButton((70, 475), (275, 75), 65, "Main Menu", (90, 490), (0, 255, 0), (0, 220, 0))
             nextlevelButton = self.createButton((575, 475), (250, 75), 65, "Next Level", (590, 490), (0, 255, 0), (0, 220, 0))
 
-        elif failed: # drawing buttons if you failed the level
+        elif failed: 
             replayButton = self.createButton((375, 475), (145, 75), 65, "Retry", (390, 490), (0, 255, 0), (0, 220, 0))
             mainMenuButton = self.createButton((70, 475), (275, 75), 65, "Main Menu", (90, 490), (0, 255, 0), (0, 220, 0))
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: # closing the game
+            if event.type == pygame.QUIT: 
                 return "QUIT"
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                mousePos = event.pos # using locals since these buttons aren't crea
-                if "mainMenuButton" in locals(): # checking if you pressed a button
+                mousePos = event.pos 
+                if "mainMenuButton" in locals(): 
                     if replayButton.collidepoint(mousePos):
                         self.reset()
                         self.player.reset()
@@ -108,6 +109,7 @@ class Window:
         self.clock.tick(60)
         self.screen.fill((173, 216, 230))
 
+        self.horizontalScroll()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -146,13 +148,22 @@ class Window:
 
         return "levels"        
 
+    def horizontalScroll(self):
+        keys = pygame.key.get_pressed()
+
+        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.hScrollng > 0:
+            self.hScrollng -= 3
+        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.hScrollng < 2400:
+            self.hScrollng += 3
+
+
     def scroll(self, event, min, max):
         if event == 4 and self.scrolling > min:
             self.scrolling -= 10
         elif event == 5 and self.scrolling < max:
             self.scrolling += 10
 
-    def createButton(self, coordinates, dimensions, fontsize, text, textcooridnates, ac, ic, scrolling=0, rad=10):
+    def createButton(self, coordinates, dimensions, fontsize, text, textcoordinates, ac, ic, scrolling=0, rad=10):
         button = pygame.Rect(coordinates[0], coordinates[1] - scrolling, dimensions[0], dimensions[1])
 
         mouse_pos = pygame.mouse.get_pos()
@@ -165,6 +176,6 @@ class Window:
         font = pygame.font.SysFont("None", fontsize)
         label = font.render(text, False, (0, 0, 0))
 
-        self.screen.blit(label, (textcooridnates[0], textcooridnates[1] - scrolling))
+        self.screen.blit(label, (textcoordinates[0], textcoordinates[1] - scrolling))
 
         return button
