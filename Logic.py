@@ -1,15 +1,15 @@
 import pygame
 import json
 
-from Window import Window
+from Windows import Windows
 
 
 pygame.init()
 
 
-class Main(Window):
+class Main():
     def __init__(self, icon, progress):
-        self.win = Window(icon)
+        self.win = Windows(icon)
 
         self.currentWindow = "mainMenu"
         self.currentLevel = None
@@ -39,7 +39,7 @@ class Main(Window):
     def play(self):
         while True:
 
-            self.currentWindow = getattr(Window, self.currentWindow)(self.win)
+            self.currentWindow = getattr(Windows, self.currentWindow)(self.win)
 
             if self.currentWindow == "start":
                 self.currentLevel = self.determineLevel()
