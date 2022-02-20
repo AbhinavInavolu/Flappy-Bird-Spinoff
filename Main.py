@@ -14,7 +14,7 @@ def resource_path(relative_path):
 
 if __name__ == "__main__":
     Icon = resource_path("images\icon.xcf")
-    Progress = resource_path("Progress.json")
+    Progress = resource_path("data\Progress.json")
 
     Main(Icon, Progress)
 
