@@ -1,7 +1,7 @@
 import pygame
 
 
-class obstacles:
+class Obstacles:
     def finish_line(self, obstacle_x_change, window):
         end1 = pygame.draw.rect(window, (255, 255, 255), (3300 - obstacle_x_change, 0, 50, 50))
         end2 = pygame.draw.rect(window, (0, 0, 0), (3350 - obstacle_x_change, 0, 50, 50))
