@@ -39,11 +39,11 @@ class Window:
                 return "QUIT"
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mousePos = event.pos
-                if startButton.collidepoint(mousePos[0], mousePos[1]):
+                if startButton.collidepoint(mousePos):
                     return "start"
-                elif levelsButton.collidepoint(mousePos[0], mousePos[1]):
+                elif levelsButton.collidepoint(mousePos):
                     return "levels"
-                elif levelMakerButton.collidepoint(mousePos[0], mousePos[1]):
+                elif levelMakerButton.collidepoint(mousePos):
                     return "levelMaker"
         
         pygame.display.update()
@@ -87,15 +87,15 @@ class Window:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mousePos = event.pos # using locals since these buttons aren't crea
                 if "mainMenuButton" in locals(): # checking if you pressed a button
-                    if replayButton.collidepoint(mousePos[0], mousePos[1]):
+                    if replayButton.collidepoint(mousePos):
                         self.reset()
                         self.player.reset()
                         return "level" 
-                    elif mainMenuButton.collidepoint(mousePos[0], mousePos[1]):
+                    elif mainMenuButton.collidepoint(mousePos):
                         self.reset()
                         self.player.reset()
                         return "mainMenu"
-                if "nextlevelButton" in locals() and nextlevelButton.collidepoint(mousePos[0], mousePos[1]):
+                if "nextlevelButton" in locals() and nextlevelButton.collidepoint(mousePos):
                     self.reset()
                     self.player.reset()
                     if self.levelNum < 9:
@@ -108,6 +108,7 @@ class Window:
         self.clock.tick(60)
         self.screen.fill((173, 216, 230))
 
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "QUIT"
@@ -118,17 +119,17 @@ class Window:
         self.clock.tick(60)
         self.screen.fill((173, 216, 230))
 
-        button1 = self.createButton((50, 75), (200, 100), 75, "Level 1", (65, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button2 = self.createButton((350, 75), (200, 100), 75, "Level 2", (365, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button3 = self.createButton((650, 75), (200, 100), 75, "Level 3", (665, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button4 = self.createButton((50, 225), (200, 100), 75, "Level 4", (65, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button5 = self.createButton((350, 225), (200, 100), 75, "Level 5", (365, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button6 = self.createButton((650, 225), (200, 100), 75, "Level 6", (665, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button7 = self.createButton((50, 375), (200, 100), 75, "Level 7", (65, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button8 = self.createButton((350, 375), (200, 100), 75, "Level 8", (365, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
-        button9 = self.createButton((650, 375), (200, 100), 75, "Level 9", (665, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level1 = self.createButton((50, 75), (200, 100), 75, "Level 1", (65, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level2 = self.createButton((350, 75), (200, 100), 75, "Level 2", (365, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level3 = self.createButton((650, 75), (200, 100), 75, "Level 3", (665, 100), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level4 = self.createButton((50, 225), (200, 100), 75, "Level 4", (65, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level5 = self.createButton((350, 225), (200, 100), 75, "Level 5", (365, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level6 = self.createButton((650, 225), (200, 100), 75, "Level 6", (665, 250), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level7 = self.createButton((50, 375), (200, 100), 75, "Level 7", (65, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level8 = self.createButton((350, 375), (200, 100), 75, "Level 8", (365, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
+        level9 = self.createButton((650, 375), (200, 100), 75, "Level 9", (665, 400), (255, 0, 0), (220, 0, 0), self.scrolling)
 
-        buttonsList = [button1, button2, button3, button4, button5, button6, button7, button8, button9]
+        buttonsList = [level1, level2, level3, level4, level5, level6, level7, level8, level9]
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -139,7 +140,7 @@ class Window:
                 self.scroll(event.button, 0, 200)
                 
                 for i in range(len(buttonsList)):
-                    if buttonsList[i].collidepoint(mousePos[0], mousePos[1]) and event.button == 1:
+                    if buttonsList[i].collidepoint(mousePos) and event.button == 1:
                         self.levelNum = i + 1
                         return "level"     
 

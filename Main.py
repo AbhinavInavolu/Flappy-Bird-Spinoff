@@ -17,3 +17,4 @@ if __name__ == "__main__":
     Progress = resource_path("Progress.json")
 
     Main(Icon, Progress)
+    
