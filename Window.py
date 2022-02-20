@@ -5,8 +5,6 @@ from obstacles import obstacles as obs
 
 class Window:
     def __init__(self, icon):
-
-
         py_image = pygame.image.load(icon)
 
         pygame.display.set_icon(py_image)
@@ -155,7 +153,6 @@ class Window:
             self.hScrollng -= 3
         elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.hScrollng < 2400:
             self.hScrollng += 3
-
 
     def scroll(self, event, min, max):
         if event == 4 and self.scrolling > min:
