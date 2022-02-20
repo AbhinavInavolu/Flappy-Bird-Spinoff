@@ -1,6 +1,6 @@
 import pygame
 from Player import Player
-from ObstaclesTest import obstacles as obs
+from obstacles import obstacles as obs
 
 
 class Window:
