@@ -1,8 +1,7 @@
-import pygame
 import json
+import pygame
 
 from Windows import Windows
-
 
 pygame.init()
 
@@ -13,7 +12,7 @@ class Main():
 
         self.currentWindow = "mainMenu"
         self.currentLevel = None
-
+        self.run = True
         self.progressPath = progress
 
         with open(self.progressPath, "r+") as file:
@@ -37,19 +36,25 @@ class Main():
         return level["level"]
 
     def play(self):
-        while True:
-
-            self.currentWindow = getattr(Windows, self.currentWindow)(self.win)
-
-            if self.currentWindow == "start":
-                self.currentLevel = self.determineLevel()
-                self.currentWindow = "level"
-
-            if self.currentWindow == "nextLevel":
-                self.updateProgress(1)
-
-            if self.currentWindow == "QUIT":
-                pygame.quit()
-                break
+        while self.run:
+            match self.currentWindow:
+                case "mainMenu":
+                    self.currentWindow = self.win.mainMenu()
+                case "level":
+                    self.currentWindow = self.win.level()
+                case "start":
+                    self.currentLevel = self.determineLevel()
+                    self.currentWindow = self.win.level(self.currentLevel)
+                case "nextLevel":
+                    self.updateProgress(1)
+                    self.currentWindow = self.win.level()
+                case "levelMaker":
+                    self.currentWindow = self.win.levelMaker()
+                case "levels":
+                    self.currentWindow = self.win.levels()
+                case "QUIT":
+                    pygame.quit()
+                    self.run = False
+                    
 
             pygame.display.update()

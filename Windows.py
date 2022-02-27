@@ -14,12 +14,20 @@ class Windows:
         self.screen = pygame.display.set_mode((900, 600))
 
         self.clock = pygame.time.Clock()
+        self.player = Player()
+
         self.scrolling = 0
         self.hScrollng = 0
         self.pos = 0
-        self.player = Player()
-        self.move = False
         self.levelNum = 1
+
+        self.move = False
+        self.drag = False
+
+        self.mousePos1 = (0, 0)
+        self.rectangles = []
+        self.rectangle = pygame.rect.Rect(0, 0, 0 ,0)
+        self.i = 0
 
     def mainMenu(self):
         self.clock.tick(60)
@@ -46,14 +54,17 @@ class Windows:
 
         return "mainMenu"        
 
-    def level(self):
+    def level(self, num=False):
+        if not num:
+            num = self.levelNum
+        
         self.clock.tick(60)
 
         self.screen.fill((173, 216, 230))
 
         finishLine = obs.finish_line(obs, self.pos, self.screen)
 
-        funcName = f"level{self.levelNum}obstacles"
+        funcName = f"level{num}obstacles"
 
         obstacles = getattr(obs, funcName)(obs, self.pos, self.screen)
 
@@ -104,11 +115,41 @@ class Windows:
         self.clock.tick(60)
         self.screen.fill((173, 216, 230))
 
-        self.horizontalScroll()
+        self.horizontalScroll(-100, 2500)
+        obs.finish_line(obs, self.hScrollng, self.screen)
+
+        character = pygame.draw.rect(self.screen, RED, (50, 300, 30, 30))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "QUIT"
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.drag = True
+                    self.mousePos1 = event.pos
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.drag = False
+                    r = pygame.rect.Rect(self.rectangle.x, self.rectangle.y, self.rectangle.width, self.rectangle.height)
+                    if not r.colliderect(character):
+                        self.rectangles.append(r)
+                    else:
+                        self.rectangle = pygame.rect.Rect(0, 0, 0 ,0)
+            elif event.type == pygame.MOUSEMOTION and self.drag:                    
+                mousePos = event.pos
+                self.rectangle.x = self.mousePos1[0] - self.hScrollng
+                self.rectangle.y = self.mousePos1[1]
+                self.rectangle.width = mousePos[0] - self.mousePos1[0]
+                self.rectangle.height = mousePos[1] - self.mousePos1[1]
+    
+        if self.rectangle.colliderect(character):
+            pygame.draw.rect(self.screen, RED, self.rectangle)
+        else :
+            pygame.draw.rect(self.screen, GREEN, self.rectangle)
+
+
+        for rect in self.rectangles:
+            pygame.draw.rect(self.screen, RED, rect)
 
         return "levelMaker"
 
@@ -148,13 +189,13 @@ class Windows:
         self.pos = 0
         self.move = False
 
-    def horizontalScroll(self):
+    def horizontalScroll(self, min, max):
         keys = pygame.key.get_pressed()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.hScrollng > 0:
-            self.hScrollng -= 3
-        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.hScrollng < 2400:
-            self.hScrollng += 3
+        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.hScrollng > min:
+            self.hScrollng -= 50
+        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.hScrollng < max:
+            self.hScrollng += 50
 
     def scroll(self, event, min, max):
         if event == 4 and self.scrolling > min:
