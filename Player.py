@@ -27,14 +27,12 @@ class Player:
 
         if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.move and self.x > 0:
             self.x -= 3
-
-        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.move and self.x < 870:
+        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.move and self.x < 870:
             self.x += 2
 
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.move and self.y > 0:
-            self.y -= 6
-
-        if self.move and self.y < 570:
+            self.y -= 3
+        elif self.move and self.y < 570:
             self.y += 3
         
         return self.move

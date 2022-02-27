@@ -1,19 +1,18 @@
-import pygame
 import json
+import pygame
 
-from Window import Window
-
+from Windows import Windows
 
 pygame.init()
 
 
-class Main(Window):
+class Main():
     def __init__(self, icon, progress):
-        self.win = Window(icon)
+        self.win = Windows(icon)
 
         self.currentWindow = "mainMenu"
         self.currentLevel = None
-
+        self.run = True
         self.progressPath = progress
 
         with open(self.progressPath, "r+") as file:
@@ -29,7 +28,7 @@ class Main(Window):
             json.dump(self.stats, file, indent=4)
             file.truncate()
 
-    def determineLevel(self): # reading json to check which level to start you on
+    def determineLevel(self): 
         for level in self.stats:
             if not level["beat"]:
                 return level["level"]
@@ -37,19 +36,25 @@ class Main(Window):
         return level["level"]
 
     def play(self):
-        while True:
-
-            self.currentWindow = getattr(Window, self.currentWindow)(self.win)
-
-            if self.currentWindow == "start":
-                self.currentLevel = self.determineLevel()
-                self.currentWindow = "level"
-
-            if self.currentWindow == "nextLevel":
-                self.updateProgress(1)
-
-            if self.currentWindow == "QUIT":
-                pygame.quit()
-                break
+        while self.run:
+            match self.currentWindow:
+                case "mainMenu":
+                    self.currentWindow = self.win.mainMenu()
+                case "level":
+                    self.currentWindow = self.win.level()
+                case "start":
+                    self.currentLevel = self.determineLevel()
+                    self.currentWindow = self.win.level(self.currentLevel)
+                case "nextLevel":
+                    self.updateProgress(1)
+                    self.currentWindow = self.win.level()
+                case "levelMaker":
+                    self.currentWindow = self.win.levelMaker()
+                case "levels":
+                    self.currentWindow = self.win.levels()
+                case "QUIT":
+                    pygame.quit()
+                    self.run = False
+                    
 
             pygame.display.update()
