@@ -1,0 +1,1 @@
+rect(window, RED, (0 - obstacle_x_change, 0, 0, 0), border_radius=5)

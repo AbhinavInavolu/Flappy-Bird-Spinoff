@@ -1,0 +1,3 @@
+startButton = self.createImageButton("images\start.png", (367, 100), (166, 100))
+levelsButton = self.createImageButton("images\levels.png", (350, 237), (200, 100))
+levelMakerButton = self.createImageButton("images\level_maker.png", (267, 375), (366, 100))

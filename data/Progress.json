@@ -1,7 +1,7 @@
 [
     {
         "level": 1,
-        "beat": false,
+        "beat": true,
         "best": 0.0,
         "unlocked": true
     },

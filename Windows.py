@@ -1,4 +1,6 @@
 import pygame
+import pygame.freetype
+import json
 
 from Player import Player
 from Obstacles import Obstacles as obs
@@ -6,7 +8,7 @@ from Constants import *
 
 
 class Windows:
-    def __init__(self, icon):
+    def __init__(self, icon, back, progress):
         py_image = pygame.image.load(icon)
 
         pygame.display.set_icon(py_image)
@@ -17,7 +19,7 @@ class Windows:
         self.player = Player()
 
         self.scrolling = 0
-        self.hScrollng = 0
+        self.hScrolling = 0
         self.pos = 0
         self.levelNum = 1
 
@@ -26,8 +28,15 @@ class Windows:
 
         self.mousePos1 = (0, 0)
         self.rectangles = []
-        self.rectangle = pygame.rect.Rect(0, 0, 0 ,0)
+        self.rectangle = [0, 0, 0, 0]
         self.i = 0
+
+        self.backImage = back
+
+        self.progressPath = progress
+
+        with open(self.progressPath, "r+") as file:
+            self.stats = json.load(file)
 
     def mainMenu(self):
         self.clock.tick(60)
@@ -41,7 +50,7 @@ class Windows:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "QUIT"
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mousePos = event.pos
                 if startButton.collidepoint(mousePos):
                     return "start"
@@ -54,9 +63,7 @@ class Windows:
 
         return "mainMenu"        
 
-    def level(self, num=False):
-        if not num:
-            num = self.levelNum
+    def level(self):
         
         self.clock.tick(60)
 
@@ -64,7 +71,7 @@ class Windows:
 
         finishLine = obs.finish_line(obs, self.pos, self.screen)
 
-        funcName = f"level{num}obstacles"
+        funcName = f"level{self.levelNum}obstacles"
 
         obstacles = getattr(obs, funcName)(obs, self.pos, self.screen)
 
@@ -72,6 +79,16 @@ class Windows:
 
         finished = self.player.checkCollision(finishLine)
         failed = self.player.checkCollision(obstacles)
+
+        backButton = self.createImageButton(self.backImage, (25, 25), (78, 48))
+
+        percentFinished = round(((self.player.x - 50 + self.pos)/32.5), 1)
+
+        if finished:
+            percentFinished = 100
+        font = pygame.font.SysFont("None", 50)
+        label = font.render(f"Level {self.levelNum}     {percentFinished}%", False, (0, 0, 0))
+        self.screen.blit(label, (130, 30))
 
         if not(finished or failed): 
             self.move = self.player.movement()
@@ -91,8 +108,12 @@ class Windows:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 return "QUIT"
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mousePos = event.pos 
+                if backButton.collidepoint(mousePos):
+                    self.reset()
+                    self.player.reset()
+                    return "mainMenu"
                 if "mainMenuButton" in locals(): 
                     if replayButton.collidepoint(mousePos):
                         self.reset()
@@ -103,6 +124,7 @@ class Windows:
                         self.player.reset()
                         return "mainMenu"
                 if "nextlevelButton" in locals() and nextlevelButton.collidepoint(mousePos):
+                    self.updateProgress(self.levelNum)
                     self.reset()
                     self.player.reset()
                     if self.levelNum < 9:
@@ -115,41 +137,57 @@ class Windows:
         self.clock.tick(60)
         self.screen.fill((173, 216, 230))
 
-        self.horizontalScroll(-100, 2500)
-        obs.finish_line(obs, self.hScrollng, self.screen)
+        self.horizontalScroll(0, 2500)
+        finishLine = obs.finish_line(obs, self.hScrolling, self.screen)
 
-        character = pygame.draw.rect(self.screen, RED, (50, 300, 30, 30))
+        character = pygame.draw.rect(self.screen, RED, (50 - self.hScrolling, 300, 30, 30))
+        backButton = self.createImageButton(self.backImage, (25, 25), (78, 48))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "QUIT"
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mousePos = event.pos 
+                if backButton.collidepoint(mousePos):
+                    with open("data/testing.txt", "w") as file:
+                        for rect in self.rectangles:
+                            file.write(f"rect(window, RED, ({rect[0]} - obstacle_x_change, {rect[1]}, {rect[2]}, {rect[3]}), border_radius=5)\n")
+
+                    return "mainMenu"
+                else:
                     self.drag = True
                     self.mousePos1 = event.pos
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
-                    self.drag = False
-                    r = pygame.rect.Rect(self.rectangle.x, self.rectangle.y, self.rectangle.width, self.rectangle.height)
-                    if not r.colliderect(character):
-                        self.rectangles.append(r)
-                    else:
-                        self.rectangle = pygame.rect.Rect(0, 0, 0 ,0)
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                self.drag = False
+                r = pygame.rect.Rect(self.rectangle[0] - self.hScrolling, self.rectangle[1], self.rectangle[2], self.rectangle[3])
+                if not r.colliderect(character) and r.collidelist(finishLine) == -1:
+                    r = pygame.rect.Rect(self.rectangle[0], self.rectangle[1], self.rectangle[2], self.rectangle[3])
+                    self.rectangles.append(r)
+                else:
+                    self.rectangle = [0 - self.hScrolling, 0, 0, 0]
             elif event.type == pygame.MOUSEMOTION and self.drag:                    
                 mousePos = event.pos
-                self.rectangle.x = self.mousePos1[0] - self.hScrollng
-                self.rectangle.y = self.mousePos1[1]
-                self.rectangle.width = mousePos[0] - self.mousePos1[0]
-                self.rectangle.height = mousePos[1] - self.mousePos1[1]
-    
-        if self.rectangle.colliderect(character):
+                self.rectangle[0] = self.mousePos1[0] + self.hScrolling
+                self.rectangle[1] = self.mousePos1[1]
+                self.rectangle[2] = mousePos[0] - self.mousePos1[0]
+                self.rectangle[3] = mousePos[1] - self.mousePos1[1]
+
+
+        self.rectangle[0] -= self.hScrolling
+
+        r = pygame.rect.Rect(self.rectangle)
+
+        if r.colliderect(character) or r.collidelist(finishLine) != -1:
             pygame.draw.rect(self.screen, RED, self.rectangle)
-        else :
+        elif self.drag:
             pygame.draw.rect(self.screen, GREEN, self.rectangle)
 
+        self.rectangle[0] += self.hScrolling
 
         for rect in self.rectangles:
+            rect.x -= self.hScrolling
             pygame.draw.rect(self.screen, RED, rect)
+            rect.x += self.hScrolling
 
         return "levelMaker"
 
@@ -157,15 +195,16 @@ class Windows:
         self.clock.tick(60)
         self.screen.fill((173, 216, 230))
 
-        level1 = self.createButton((50, 75), (200, 100), 75, "Level 1", (65, 100), RED, DARK_RED, self.scrolling)
-        level2 = self.createButton((350, 75), (200, 100), 75, "Level 2", (365, 100), RED, DARK_RED, self.scrolling)
-        level3 = self.createButton((650, 75), (200, 100), 75, "Level 3", (665, 100), RED, DARK_RED, self.scrolling)
-        level4 = self.createButton((50, 225), (200, 100), 75, "Level 4", (65, 250), RED, DARK_RED, self.scrolling)
-        level5 = self.createButton((350, 225), (200, 100), 75, "Level 5", (365, 250), RED, DARK_RED, self.scrolling)
-        level6 = self.createButton((650, 225), (200, 100), 75, "Level 6", (665, 250), RED, DARK_RED, self.scrolling)
-        level7 = self.createButton((50, 375), (200, 100), 75, "Level 7", (65, 400), RED, DARK_RED, self.scrolling)
-        level8 = self.createButton((350, 375), (200, 100), 75, "Level 8", (365, 400), RED, DARK_RED, self.scrolling)
-        level9 = self.createButton((650, 375), (200, 100), 75, "Level 9", (665, 400), RED, DARK_RED, self.scrolling)
+        level1 = self.createButton((50, 100), (200, 100), 75, "Level 1", (65, 125), RED, DARK_RED, self.scrolling)
+        level2 = self.createButton((350, 100), (200, 100), 75, "Level 2", (365, 125), RED, DARK_RED, self.scrolling)
+        level3 = self.createButton((650, 100), (200, 100), 75, "Level 3", (665, 125), RED, DARK_RED, self.scrolling)
+        level4 = self.createButton((50, 250), (200, 100), 75, "Level 4", (65, 275), RED, DARK_RED, self.scrolling)
+        level5 = self.createButton((350, 250), (200, 100), 75, "Level 5", (365, 275), RED, DARK_RED, self.scrolling)
+        level6 = self.createButton((650, 250), (200, 100), 75, "Level 6", (665, 275), RED, DARK_RED, self.scrolling)
+        level7 = self.createButton((50, 400), (200, 100), 75, "Level 7", (65, 425), RED, DARK_RED, self.scrolling)
+        level8 = self.createButton((350, 400), (200, 100), 75, "Level 8", (365, 425), RED, DARK_RED, self.scrolling)
+        level9 = self.createButton((650, 400), (200, 100), 75, "Level 9", (665, 425), RED, DARK_RED, self.scrolling)
+        backButton = self.createImageButton(self.backImage, (25, 25), (78, 48))
 
         buttonsList = [level1, level2, level3, level4, level5, level6, level7, level8, level9]
 
@@ -175,12 +214,15 @@ class Windows:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mousePos = event.pos
 
-                self.scroll(event.button, 0, 200)
+                self.scroll(event.button, 0, 225)
+
+                if backButton.collidepoint(mousePos):
+                    return "mainMenu"
                 
                 for i in range(len(buttonsList)):
                     if buttonsList[i].collidepoint(mousePos) and event.button == 1:
                         self.levelNum = i + 1
-                        return "level"     
+                        return "level"
 
         return "levels"        
 
@@ -192,10 +234,10 @@ class Windows:
     def horizontalScroll(self, min, max):
         keys = pygame.key.get_pressed()
 
-        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.hScrollng > min:
-            self.hScrollng -= 50
-        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.hScrollng < max:
-            self.hScrollng += 50
+        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.hScrolling > min:
+            self.hScrolling -= 20
+        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.hScrolling < max:
+            self.hScrolling += 20
 
     def scroll(self, event, min, max):
         if event == 4 and self.scrolling > min:
@@ -214,8 +256,32 @@ class Windows:
             pygame.draw.rect(self.screen, ac, button, border_radius=rad)
 
         font = pygame.font.SysFont("None", fontsize)
+
         label = font.render(text, False, (0, 0, 0))
 
         self.screen.blit(label, (textcoordinates[0], textcoordinates[1] - scrolling))
 
         return button
+
+    def createImageButton(self, image, coordinates, dimensions, scrolling=0):
+        img = pygame.image.load(image)
+        img = pygame.transform.scale(img, dimensions)
+
+        img = self.screen.blit(img, (coordinates[0] + scrolling, coordinates[1] + scrolling))
+
+        return img
+
+    def determineLevel(self): 
+        for level in self.stats:
+            if not level["beat"]:
+                return level["level"]
+        
+        return level["level"]
+
+    def updateProgress(self, levelNum):
+        self.stats[levelNum - 1]["beat"] = True
+
+        with open(self.progressPath, "r+") as file:
+            file.seek(0)
+            json.dump(self.stats, file, indent=4)
+            file.truncate()
