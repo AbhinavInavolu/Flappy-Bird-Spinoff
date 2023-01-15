@@ -71,9 +71,16 @@ class Windows:
 
         finishLine = obs.finish_line(obs, self.pos, self.screen)
 
-        funcName = f"level{self.levelNum}obstacles"
+        if self.levelNum < 10:
+            funcName = f"level{self.levelNum}obstacles"
 
-        obstacles = getattr(obs, funcName)(obs, self.pos, self.screen)
+            obstacles = getattr(obs, funcName)(obs, self.pos, self.screen)
+        else:
+            with open("data/testing.txt", "r") as file:
+                obstacles = exec(file.read())
+
+                if obstacles is None:
+                    obstacles = []
 
         self.player.display(self.screen)
 
@@ -149,9 +156,13 @@ class Windows:
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mousePos = event.pos 
                 if backButton.collidepoint(mousePos):
-                    with open("data/testing.txt", "w") as file:
-                        for rect in self.rectangles:
-                            file.write(f"rect(window, RED, ({rect[0]} - obstacle_x_change, {rect[1]}, {rect[2]}, {rect[3]}), border_radius=5)\n")
+                    with open("data/testing.txt", "a") as file:
+                        for x in range(1, len(self.rectangles)):
+                            rect = self.rectangles[x]
+                            file.write(f"        rect{x} = rect(window, RED, ({rect[0]} - obstacle_x_change, {rect[1]}, {rect[2]}, {rect[3]}), border_radius=5)\n")
+
+                        file.write(f"\n        rectList = {[f'rect{n}' for n in range(1, len(self.rectangles))]}\n".replace("'", ""))
+                        file.write("\n        return rectList\n")
 
                     return "mainMenu"
                 else:
@@ -204,9 +215,10 @@ class Windows:
         level7 = self.createButton((50, 400), (200, 100), 75, "Level 7", (65, 425), RED, DARK_RED, self.scrolling)
         level8 = self.createButton((350, 400), (200, 100), 75, "Level 8", (365, 425), RED, DARK_RED, self.scrolling)
         level9 = self.createButton((650, 400), (200, 100), 75, "Level 9", (665, 425), RED, DARK_RED, self.scrolling)
+        level10 = self.createButton((50, 550), (230, 100), 75, "Level 10", (65, 575), RED, DARK_RED, self.scrolling)
         backButton = self.createImageButton(self.backImage, (25, 25), (78, 48))
 
-        buttonsList = [level1, level2, level3, level4, level5, level6, level7, level8, level9]
+        buttonsList = [level1, level2, level3, level4, level5, level6, level7, level8, level9, level10]
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -214,7 +226,7 @@ class Windows:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mousePos = event.pos
 
-                self.scroll(event.button, 0, 225)
+                self.scroll(event.button, 0, 375)
 
                 if backButton.collidepoint(mousePos):
                     return "mainMenu"
